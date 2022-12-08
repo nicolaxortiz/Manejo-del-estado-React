@@ -1,34 +1,57 @@
 import React from "react";
 
-function UseState({name}) {
+function UseReducer({name}) {
 
     //Contraseña
     const SECURITY_CODE = 'paradigma';
 
-    //Estados
-    const [getState, setState] = React.useState({
+    //Valores iniciales
+    const initialState = {
         value: '',
         error: false,
         loading: false,
         deleted: false,
         confirmed: false
-    })
+    }
 
-    //Funciones operadores logicos
+    //Estados
+    const [getState, dispatch] = React.useReducer(reducer, initialState);
+
+    //Funciones
     function OnChange(e) {
-        setState({...getState, value: e.target.value})
+        dispatch({
+            type: 'CHANGE', payload: e.target.value
+        })
     }
 
     function OnConfirm(){
-        setState({...getState, loading: true, error:false})
+        dispatch({
+            type: 'CONFIRM'
+        })
     }
 
     function OnDelete(){
-        setState({...getState, deleted: true})
+        dispatch({
+            type: 'DELETE'
+        })
     }
 
     function OnRegret(){
-        setState({...getState, deleted: false, confirmed: false, value:''})
+        dispatch({
+            type: 'REGRET'
+        })
+    }
+
+    function OnChecked(){
+        dispatch({
+            type: 'CHECKED'
+        })
+    }
+
+    function OnError(){
+        dispatch({
+            type: 'ERROR'
+        })
     }
 
     //UseEfetc Loading
@@ -36,9 +59,9 @@ function UseState({name}) {
         if(getState.loading){
             setTimeout(() => {
                 if(getState.value === SECURITY_CODE){
-                    setState({...getState, loading: false, confirmed: true})
+                    OnChecked();
                 } else{
-                    setState({...getState, loading: false, error:true})
+                    OnError();
                 }
             }, 3000)
         }
@@ -75,7 +98,7 @@ function UseState({name}) {
     } else if(getState.confirmed && getState.deleted){
         return(
             <div>
-                <h1>UseState fue eliminado</h1>
+                <h1>UseReducer fue eliminado</h1>
                 <button onClick={() => {OnRegret()}}>Recuperar</button>
             </div>
         );
@@ -83,4 +106,23 @@ function UseState({name}) {
   
 }
 
-export { UseState }
+
+//Reducer
+const reducerObject = (state, payload) => ({
+    'ERROR': {...state, loading: false, error:true},
+    'CHECKED': {...state, loading: false, confirmed: true},
+    'REGRET': {...state, deleted: false, confirmed: false, value:''},
+    'DELETE': {...state, deleted: true},
+    'CONFIRM': {...state, loading: true, error:false},
+    'CHANGE': {...state, value: payload} 
+});
+
+const reducer = (state, action) => {
+    if(reducerObject(state)[action.type]){
+        return reducerObject(state, action.payload)[action.type]
+    } else {
+        return state;
+    }
+}
+
+export { UseReducer }
